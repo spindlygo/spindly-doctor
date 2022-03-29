@@ -110,7 +110,7 @@ async function CheckExecs() {
 
                 You can also install the NDK using Android Studio. But make sure that you are installing a version that's starting with '19.2'. See https://developer.android.com/studio/projects/install-ndk#specific-version
 
-                If you have an Android NDK installed, please set the ANDROID_NDK_HOME environment variable to the path of your Android NDK, including the folder named after the version. Example : 'AndroidSDK/ndk/23.1.7779620/'
+                If you have an Android NDK installed, please set the ANDROID_NDK_HOME environment variable to the path of your Android NDK, including the folder named after the version. Example : 'AndroidSDK/ndk/19.2.5345600/'
 
                 ${howToSetEnvVars}`;
 
