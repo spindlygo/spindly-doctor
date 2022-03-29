@@ -89,6 +89,9 @@ async function CheckExecs() {
             See https://developer.android.com/studio/command-line/variables
 
             ${howToSetEnvVars}`);
+
+            ANDROID_HOME_info = "'ndk' folder in your android sdk folder."
+
         } else {
 
             // Check if directory exists
@@ -98,7 +101,6 @@ async function CheckExecs() {
                 console.log(`❌ ERROR ANDROID_HOME is set, but the directory does not exist. Please check the path '${process.env.ANDROID_HOME}' and try again.`);
             }
 
-            ANDROID_HOME_info = "'ndk' folder in your android sdk folder."
         }
 
 
