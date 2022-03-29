@@ -1,6 +1,6 @@
 {
   "name": "spindly-doctor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Check whether the tools needed for development with Spindly are correctly installed",
   "main": "index.js",
   "scripts": {
