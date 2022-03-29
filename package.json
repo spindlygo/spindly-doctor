@@ -1,0 +1,35 @@
+{
+  "name": "spindly-doctor",
+  "version": "1.0.1",
+  "description": "Check whether the tools needed for development with Spindly are correctly installed",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spindlygo/spindly-doctor.git"
+  },
+  "keywords": [
+    "spindly",
+    "health-check",
+    "svelte",
+    "go",
+    "android",
+    "android-ndk",
+    "ios",
+    "windows",
+    "linux",
+    "macos"
+  ],
+  "author": "Hasindu Lanka",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/spindlygo/spindly-doctor/issues"
+  },
+  "homepage": "https://github.com/spindlygo/spindly-doctor#readme",
+  "bin": "index.js",
+  "dependencies": {
+    "hasbin": "^1.2.3"
+  }
+}
