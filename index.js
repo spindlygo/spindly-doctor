@@ -5,48 +5,139 @@ const child_process = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-let mobileCheck = true
-let androidCheck = mobileCheck && true
 
-CheckExecs();
+let DesktopCheck = true;
+let MobileCheck = true;
+let AndroidCheck = true
+let IOSCheck = true
 
-async function CheckExecs() {
+
+if (process.argv.length > 2) {
+
+    let value = process.argv[2].toLowerCase();
+    console.log("📝 Argument : " + value);
+    switch (value) {
+
+        case "all":
+            DesktopCheck = true;
+            MobileCheck = true;
+            AndroidCheck = true;
+            IOSCheck = true;
+            break;
+
+        case "desktop":
+            DesktopCheck = true;
+            MobileCheck = false;
+            AndroidCheck = false;
+            IOSCheck = false;
+            break;
+
+        case "mobile":
+            DesktopCheck = false;
+            MobileCheck = true;
+            AndroidCheck = true;
+            IOSCheck = true;
+            break;
+
+        case "android":
+            DesktopCheck = false;
+            MobileCheck = true;
+            AndroidCheck = true;
+            IOSCheck = false;
+            break;
+
+        case "ios":
+            DesktopCheck = false;
+            MobileCheck = true;
+            AndroidCheck = false;
+            IOSCheck = true;
+            break;
+
+        case "help":
+        default:
+            console.log("Usage: npx spindly-doctor [all|desktop|mobile|android|ios]");
+            break
+    }
+}
+
+
+let CheckExecs = async (desktopCheck, mobileCheck, androidCheck, iOSCheck, resultCallback) => {
     console.log("Checking for executables...");
 
+    const essentialTasks = 3;
+    const desktopTasks = 0;
+    const mobileTasks = 1;
+    const androidTasks = 2;
+    const iosTasks = 0;
+
+    const totalTasks = essentialTasks +
+        (desktopCheck ? desktopTasks : 0) +
+        (mobileCheck ? mobileTasks : 0) +
+        (androidCheck ? androidTasks : 0) +
+        (iOSCheck ? iosTasks : 0);
+
+    let completedTasks = 0;
+    let report = {};
+
     if (NotFound("node") || NotFound("npm")) {
-        console.log("Install Node from https://nodejs.org/en/");
-        console.log("If it's already installed, make sure it's in your PATH. See https://www.tutorialspoint.com/nodejs/nodejs_environment_setup.htm");
+        console.log("❌ ERROR Node or NPM is not installed");
+        console.log("Install Node from https://nodejs.org/en/ . If it's already installed, make sure it's in your PATH. See https://www.tutorialspoint.com/nodejs/nodejs_environment_setup.htm");
+        completedTasks++;
+        report.node = false;
+
     } else {
-        Exec(`npm version`).then(() => {
+        Exec(`node --version`).then(() => {
             console.log("✅ OK node and npm are installed.");
+            completedTasks++;
+            report.node = true;
+
         }).catch(() => {
             console.log("❌ ERROR npm is present, but not working. Try running 'npm version' to see if it's working.");
+            completedTasks++;
+            report.node = false;
+
         });
     }
 
 
 
     if (NotFound("git")) {
+        console.log("❌ ERROR git is not installed");
         console.log("Install git from https://git-scm.com/");
         console.log("If it's already installed, make sure it's in your PATH. See https://stackoverflow.com/questions/26620312/git-installing-git-in-path-with-github-client-for-windows");
+        completedTasks++;
+        report.git = false;
 
     } else {
         Exec(`git --version`).then(() => {
             console.log("✅ OK git is installed.");
+            completedTasks++;
+            report.git = true;
+
         }).catch(() => {
             console.log("❌ ERROR git is present, but not working. Try running 'git --version' to see if it's working.");
+            completedTasks++;
+            report.git = false;
         });
     }
 
     if (NotFound("go")) {
+        console.log("❌ ERROR 'Go' is not installed");
         console.log("Install Go from https://go.dev/doc/install");
         console.log("If it's already installed, make sure it's in your PATH.");
+        completedTasks++;
+        report.go = false;
 
     } else {
         Exec(`go version`).then(() => {
             console.log("✅ OK go is installed.");
+            completedTasks++;
+            report.go = true;
+
         }).catch(() => {
             console.log("❌ ERROR go is present, but not working. Try running 'go version' to see if it's working.");
+            completedTasks++;
+            report.go = false;
         });
 
         if (mobileCheck) {
@@ -57,17 +148,26 @@ async function CheckExecs() {
                     if (Found("gomobile")) {
                         Exec(`gomobile init`).then(() => {
                             console.log("✅ OK Installed gomobile.");
+                            completedTasks++;
+                            report.gomobile = true;
+
                         }).catch(() => {
                             console.log("❌ ERROR gomobile is present, but not working. Try running 'gomobile init' to see if it's working.");
+                            completedTasks++;
+                            report.gomobile = false;
                         });
 
                     } else {
                         console.log("❌ ERROR Go is installed, but go bin is not in your PATH. Please add it to your PATH. See https://stackoverflow.com/questions/42965673/cant-run-go-bin-in-terminal");
+                        completedTasks++;
+                        report.gomobile = false;
                     }
                 });
 
             } else {
                 console.log("✅ OK gomobile is installed.");
+                completedTasks++;
+                report.gomobile = true;
             }
         }
     }
@@ -90,6 +190,9 @@ async function CheckExecs() {
 
             ${howToSetEnvVars}`);
 
+            completedTasks++;
+            report.androidHome = false;
+
             ANDROID_HOME_info = "'ndk' folder in your android sdk folder."
 
         } else {
@@ -97,8 +200,13 @@ async function CheckExecs() {
             // Check if directory exists
             if (fs.existsSync(process.env.ANDROID_HOME)) {
                 console.log("✅ OK ANDROID_HOME is set : " + process.env.ANDROID_HOME);
+                completedTasks++;
+                report.androidHome = true;
+
             } else {
                 console.log(`❌ ERROR ANDROID_HOME is set, but the directory does not exist. Please check the path '${process.env.ANDROID_HOME}' and try again.`);
+                completedTasks++;
+                report.androidHome = false;
             }
 
         }
@@ -116,12 +224,17 @@ async function CheckExecs() {
 
         if (!process.env.ANDROID_NDK_HOME) {
             console.log(`❌ ERROR ANDROID_NDK_HOME environment variable is not set. ${ndkNotFoundWarning}`);
+            completedTasks++;
+            report.androidNDKHome = false;
 
         } else {
             // Check if directory exists
             let nkdCheckPath = path.join(process.env.ANDROID_NDK_HOME, `toolchains/llvm/prebuilt/`)
             if (fs.existsSync(nkdCheckPath)) {
                 console.log("✅ OK ANDROID_NDK_HOME is set : " + process.env.ANDROID_NDK_HOME);
+
+                completedTasks++;
+                report.androidNDKHome = true;
 
             } else {
                 console.log(`❌ ERROR ANDROID_NDK_HOME is set, but the directory does not contain necessary files. Please check the path '${process.env.ANDROID_NDK_HOME}' and try again.
@@ -130,9 +243,27 @@ async function CheckExecs() {
                 Check the path and try again.
 
                 ${ndkNotFoundWarning}`);
+
+                completedTasks++;
+                report.androidNDKHome = false;
             }
         }
     }
+
+    let endReportTimer = setInterval(() => {
+        console.log(`${completedTasks}/${totalTasks} tasks completed.`);
+        if (completedTasks >= totalTasks) {
+            console.log("\n\n");
+            console.log("✅ All tasks completed.\n");
+
+
+            if (resultCallback) {
+                resultCallback(report);
+            }
+
+            clearInterval(endReportTimer);
+        }
+    }, 2000);
 
 }
 
@@ -163,3 +294,13 @@ function Exec(file, envVars) {
     });
 
 }
+
+
+exports.CheckExecs = CheckExecs;
+
+function ShowResults(report) {
+    console.log("📝 Report : ");
+    console.log(report);
+}
+
+CheckExecs(DesktopCheck, MobileCheck, AndroidCheck, IOSCheck, ShowResults)
